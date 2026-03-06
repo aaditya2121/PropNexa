@@ -5,13 +5,13 @@ import { getStorage } from 'firebase/storage';
 
 // Firebase configuration from Firebase Console
 const firebaseConfig = {
-    apiKey: "AIzaSyB7hMmjcNdNLvFO7rmCXqmPm4TB08QtLwo",
-    authDomain: "real-estate-asset-brain.firebaseapp.com",
-    projectId: "real-estate-asset-brain",
-    storageBucket: "real-estate-asset-brain.firebasestorage.app",
-    messagingSenderId: "646141446210",
-    appId: "1:646141446210:web:ef38266178149dd39745db",
-    measurementId: "G-MHYFT6QYJ6"
+    apiKey: "AIzaSyCzaTyGZTk-l7Lk-56CAKBdP2QjCXYkNBw",
+    authDomain: "propnexa.firebaseapp.com",
+    projectId: "propnexa",
+    storageBucket: "propnexa.firebasestorage.app",
+    messagingSenderId: "943433298458",
+    appId: "1:943433298458:web:cbac2c85447d140b5817a3",
+    measurementId: "G-2P9P436LGK"
 };
 
 // Initialize Firebase

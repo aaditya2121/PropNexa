@@ -12,9 +12,9 @@ const initialUsers = [
         propertyId: null
     },
     {
-        email: 'chintu@propnexa.com',
-        password: 'Chintu123',
-        username: 'Chintu',
+        email: 'rohan@propnexa.com',
+        password: 'Rohan123',
+        username: 'Rohan',
         role: 'tenant',
         propertyId: 'mumbai_galaxy'
     },
@@ -51,7 +51,7 @@ async function setupUsers() {
     console.log('\n✅ User setup complete!');
     console.log('\nYou can now login with:');
     console.log('Owner: Ishaan / Ishaan123');
-    console.log('Tenant 1: Chintu / Chintu123');
+    console.log('Tenant 1: Rohan / Rohan123');
     console.log('Tenant 2: suresh / tenant123');
 }
 

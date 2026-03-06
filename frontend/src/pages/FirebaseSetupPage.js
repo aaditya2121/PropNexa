@@ -41,7 +41,7 @@ export default function FirebaseSetupPage() {
 
         try {
             await fixPropertyData();
-            setStatus('✅ Property data fixed! Rent for Chintu is now ₹10,000.');
+            setStatus('✅ Property data fixed! Rent for Rohan is now ₹10,000.');
         } catch (error) {
             setStatus(`❌ Error: ${error.message}`);
         }
@@ -126,7 +126,7 @@ export default function FirebaseSetupPage() {
                     <h3 className="font-semibold mb-2">ℹ️ After Setup:</h3>
                     <ul className="text-sm text-slate-300 space-y-1">
                         <li>• Owner login: Ishaan / Ishaan123</li>
-                        <li>• Tenant login: Chintu / Chintu123</li>
+                        <li>• Tenant login: Rohan / Rohan123</li>
                         <li>• All data will be in Firestore</li>
                         <li>• You can delete the backend server</li>
                     </ul>

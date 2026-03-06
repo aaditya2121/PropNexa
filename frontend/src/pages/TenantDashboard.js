@@ -88,123 +88,145 @@ export default function TenantDashboard() {
     if (!user) return null;
 
     return (
-        <div className="min-h-screen bg-slate-950 text-slate-50 font-sans relative">
-            <div className="container mx-auto p-4 max-w-5xl">
-                {/* Simple Header */}
-                <div className="flex justify-between items-center mb-8 bg-slate-900/50 p-4 rounded-xl border border-slate-800">
-                    <div className="flex items-center gap-3">
-                        <img src={propnexaLogo} alt="Logo" className="w-8 h-8 object-contain" />
-                        <h1 className="text-xl font-bold font-serif text-amber-100">PropNexa Tenant</h1>
-                    </div>
+        <div className="min-h-screen bg-[#030712] text-slate-50 font-sans relative overflow-hidden">
+            {/* Background Decor */}
+            <div className="fixed top-[-10%] left-[-10%] w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none animate-pulse glow-blue"></div>
+            <div className="fixed bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[100px] pointer-events-none animate-pulse delay-700 glow-accent"></div>
+
+            <div className="container mx-auto p-4 max-w-5xl relative z-10">
+                {/* Premium Header */}
+                <div className="flex justify-between items-center mb-8 glass p-5 rounded-2xl animate-in slide-up">
                     <div className="flex items-center gap-4">
-                        <span className="text-sm text-slate-400">Welcome, {user.username}</span>
+                        <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center border border-white/10 glow-blue">
+                            <img src={propnexaLogo} alt="Logo" className="w-8 h-8 object-contain drop-shadow-md" />
+                        </div>
+                        <div>
+                            <h1 className="text-xl font-bold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">PropNexa</h1>
+                            <div className="text-xs text-blue-400 font-semibold tracking-wider uppercase">Tenant Portal</div>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-3 md:gap-4">
+                        <span className="text-sm font-medium text-slate-300 hidden md:inline-block">Welcome, <span className="text-white">{user.username}</span></span>
                         <button
                             onClick={() => navigate('/')}
-                            className="p-2 bg-blue-500/10 text-blue-400 rounded-lg hover:bg-blue-500/20 transition-colors"
+                            className="p-2.5 bg-slate-800/50 text-slate-300 rounded-xl hover:bg-white/10 transition-colors border border-slate-700"
                             title="Home"
                         >
-                            <Home className="w-4 h-4" />
+                            <Home className="w-5 h-5" />
                         </button>
                         <button
                             onClick={handleLogout}
-                            className="p-2 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/20 transition-colors"
+                            className="p-2.5 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500/20 transition-colors border border-red-500/20 hover:border-red-500/40"
                             title="Logout"
                         >
-                            <LogOut className="w-4 h-4" />
+                            <LogOut className="w-5 h-5" />
                         </button>
                     </div>
                 </div>
 
-                {/* Tabs */}
-                <div className="flex gap-2 mb-6">
+                {/* Glass Tabs */}
+                <div className="flex gap-2 md:gap-4 mb-8 glass p-2 rounded-2xl animate-in slide-up delay-100">
                     <button
                         onClick={() => setActiveTab('home')}
-                        className={`flex-1 py-3 rounded-lg font-medium flex items-center justify-center gap-2 transition-all ${activeTab === 'home' ? 'bg-blue-600 text-white' : 'bg-slate-900 text-slate-400 hover:bg-slate-800'}`}
+                        className={`flex-1 py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-all duration-300 ${activeTab === 'home' ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg glow-blue' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
                     >
-                        <Building2 className="w-4 h-4" /> My Home
+                        <Building2 className="w-5 h-5" /> <span className="hidden sm:inline">My Home</span>
                     </button>
                     <button
                         onClick={() => setActiveTab('maintenance')}
-                        className={`flex-1 py-3 rounded-lg font-medium flex items-center justify-center gap-2 transition-all ${activeTab === 'maintenance' ? 'bg-blue-600 text-white' : 'bg-slate-900 text-slate-400 hover:bg-slate-800'}`}
+                        className={`flex-1 py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-all duration-300 ${activeTab === 'maintenance' ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg glow-blue' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
                     >
-                        <Wrench className="w-4 h-4" /> Maintenance
+                        <Wrench className="w-5 h-5" /> <span className="hidden sm:inline">Maintenance</span>
                     </button>
                     <button
                         onClick={() => setActiveTab('documents')}
-                        className={`flex-1 py-3 rounded-lg font-medium flex items-center justify-center gap-2 transition-all ${activeTab === 'documents' ? 'bg-blue-600 text-white' : 'bg-slate-900 text-slate-400 hover:bg-slate-800'}`}
+                        className={`flex-1 py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-all duration-300 ${activeTab === 'documents' ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg glow-blue' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
                     >
-                        <FileText className="w-4 h-4" /> Documents
+                        <FileText className="w-5 h-5" /> <span className="hidden sm:inline">Documents</span>
                     </button>
                 </div>
 
-                {/* Content */}
-                <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-6 min-h-[400px]">
+                {/* Content Container */}
+                <div className="min-h-[500px] animate-in slide-up delay-200">
                     {loading ? <div className="text-center p-10 text-slate-500">Loading Property Data...</div> : (
                         <>
                             {activeTab === 'home' && property && (
-                                <div className="animate-in fade-in">
-                                    <h2 className="text-2xl font-bold mb-4">Rent Status</h2>
-                                    <div className="card bg-slate-800/50 p-6 rounded-xl border border-green-500/20 mb-6">
-                                        <div className="flex justify-between items-center">
+                                <div className="space-y-6">
+                                    <h2 className="text-3xl font-black mb-6 tracking-tight">Financial Overview</h2>
+
+                                    {/* Rent Card */}
+                                    <div className="glass-card p-8 rounded-3xl border border-indigo-500/30 glow-accent relative overflow-hidden group">
+                                        <div className="absolute top-[-50%] right-[-10%] w-[300px] h-[300px] bg-indigo-500/10 rounded-full blur-[80px] group-hover:bg-indigo-500/20 transition-colors"></div>
+                                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center relative z-10 gap-6">
                                             <div>
-                                                <div className="text-slate-400 text-sm mb-1">Upcoming Rent</div>
-                                                <div className="text-3xl font-bold text-white">{formatCurrency(property.rentAmount)}</div>
-                                                <div className="text-xs text-green-400 mt-1">Due Date: 1st {new Date().toLocaleString('default', { month: 'short' })}</div>
+                                                <div className="text-indigo-300 font-semibold text-sm mb-2 tracking-wide uppercase">Upcoming Payment</div>
+                                                <div className="text-5xl font-black text-white mb-2">{formatCurrency(property.rentAmount)}</div>
+                                                <div className="inline-flex items-center gap-2 bg-indigo-500/10 text-indigo-300 px-3 py-1 rounded-full text-xs font-medium border border-indigo-500/20">
+                                                    <Clock className="w-3 h-3" /> Due: 1st {new Date().toLocaleString('default', { month: 'short' })}
+                                                </div>
                                             </div>
                                             <button
                                                 onClick={() => setShowQRModal(true)}
-                                                className="bg-green-600 hover:bg-green-500 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-green-900/20 transition-all transform hover:scale-105"
+                                                className="w-full md:w-auto btn-primary bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 shadow-emerald-900/40"
                                             >
-                                                Pay Now
+                                                Pay Rent Instantly
                                             </button>
                                         </div>
                                     </div>
 
-                                    <h3 className="font-bold text-lg mb-3">Lease Details</h3>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="bg-slate-950 p-4 rounded-lg">
-                                            <label className="text-xs text-slate-500 uppercase">Property</label>
-                                            <div className="text-slate-200">{property.address}</div>
+                                    <h3 className="text-2xl font-bold mt-10 mb-4 tracking-tight">Lease Details</h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div className="glass p-6 rounded-2xl hover-lift">
+                                            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block">Property Address</label>
+                                            <div className="text-lg font-medium text-slate-100">{property.address}</div>
                                         </div>
-                                        <div className="bg-slate-950 p-4 rounded-lg">
-                                            <label className="text-xs text-slate-500 uppercase">Landlord</label>
-                                            <div className="text-slate-200">{property.landlordName}</div>
+                                        <div className="glass p-6 rounded-2xl hover-lift delay-100">
+                                            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block">Landlord</label>
+                                            <div className="text-lg font-medium text-slate-100">{property.landlordName}</div>
                                         </div>
-                                        <div className="bg-slate-950 p-4 rounded-lg">
-                                            <label className="text-xs text-slate-500 uppercase">Lease Ends</label>
-                                            <div className="text-slate-200">{property.leaseEndDate}</div>
+                                        <div className="glass p-6 rounded-2xl hover-lift delay-200">
+                                            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block">Lease End Date</label>
+                                            <div className="text-lg font-medium text-slate-100">{property.leaseEndDate}</div>
                                         </div>
                                     </div>
                                 </div>
                             )}
 
                             {activeTab === 'maintenance' && (
-                                <div className="animate-in fade-in">
-                                    <div className="flex justify-between items-center mb-6">
-                                        <h2 className="text-2xl font-bold">Reported Issues</h2>
+                                <div className="animate-in fade-in space-y-6">
+                                    <div className="flex justify-between items-center bg-slate-900/20 p-2 rounded-2xl">
+                                        <h2 className="text-3xl font-black px-4 tracking-tight">Reported Issues</h2>
                                         <button
                                             onClick={() => setShowIssueModal(true)}
-                                            className="bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 px-4 py-2 rounded-lg text-sm border border-blue-500/30 flex items-center gap-2"
+                                            className="btn-primary py-2.5 px-5 text-sm"
                                         >
-                                            <Plus className="w-4 h-4" /> New Request
+                                            <Plus className="w-4 h-4 inline-block mr-1" /> New Request
                                         </button>
                                     </div>
 
                                     <div className="space-y-4">
-                                        {issues.length === 0 ? <p className="text-slate-500 text-center py-8">No issues reported.</p> : issues.map(issue => (
-                                            <div key={issue.id} className="flex items-center justify-between bg-slate-950 p-4 rounded-xl border border-slate-800">
-                                                <div className="flex items-center gap-4">
-                                                    <div className={`p-2 rounded-lg ${issue.status === 'Resolved' ? 'bg-green-500/10' : 'bg-orange-500/10'}`}>
-                                                        {issue.status === 'Resolved' ? <CheckCircle className="w-5 h-5 text-green-400" /> : <Clock className="w-5 h-5 text-orange-400" />}
+                                        {issues.length === 0 ? (
+                                            <div className="glass-card text-center py-16 rounded-3xl">
+                                                <Wrench className="w-16 h-16 mx-auto mb-4 text-slate-600 opacity-50" />
+                                                <p className="text-slate-400 font-medium text-lg">No issues reported. Everything looks good!</p>
+                                            </div>
+                                        ) : issues.map(issue => (
+                                            <div key={issue.id} className="glass p-5 rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 hover:border-blue-500/30 transition-all hover-lift">
+                                                <div className="flex items-start gap-4">
+                                                    <div className={`p-3 rounded-xl mt-1 md:mt-0 shadow-lg ${issue.status === 'Resolved' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-orange-500/20 text-orange-400 border border-orange-500/30'}`}>
+                                                        {issue.status === 'Resolved' ? <CheckCircle className="w-6 h-6" /> : <Clock className="w-6 h-6" />}
                                                     </div>
                                                     <div>
-                                                        <div className="font-semibold">{issue.description}</div>
-                                                        <div className="text-xs text-slate-500">Category: {issue.category} • {issue.date}</div>
+                                                        <div className="text-lg font-bold text-white mb-1">{issue.description}</div>
+                                                        <div className="flex items-center gap-3 text-sm text-slate-400 font-medium">
+                                                            <span className="bg-white/5 px-2 py-0.5 rounded-md border border-white/10 capitalize">{issue.category}</span>
+                                                            <span>Reported: {issue.date}</span>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                                <span className={`px-3 py-1 rounded-full text-xs ${issue.status === 'Resolved' ? 'bg-green-500/10 text-green-500' : 'bg-yellow-500/10 text-yellow-500'}`}>
+                                                <div className={`px-4 py-1.5 rounded-full text-xs font-bold border ${issue.status === 'Resolved' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-orange-500/10 text-orange-400 border-orange-500/20'}`}>
                                                     {issue.status}
-                                                </span>
+                                                </div>
                                             </div>
                                         ))}
                                     </div>
@@ -212,27 +234,30 @@ export default function TenantDashboard() {
                             )}
 
                             {activeTab === 'documents' && (
-                                <div className="animate-in fade-in space-y-3">
+                                <div className="animate-in fade-in space-y-4">
+                                    <h2 className="text-3xl font-black mb-6 tracking-tight">My Documents</h2>
                                     {documents.length === 0 ? (
-                                        <div className="text-center py-12 text-slate-500">
-                                            <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                                            <p>No documents shared yet.</p>
+                                        <div className="glass-card text-center py-16 rounded-3xl">
+                                            <FileText className="w-16 h-16 mx-auto mb-4 text-slate-600 opacity-50" />
+                                            <p className="text-slate-400 font-medium text-lg">No documents shared yet.</p>
                                         </div>
                                     ) : (
-                                        documents.map(doc => (
-                                            <div key={doc.id} className="bg-slate-950 p-4 rounded-xl border border-slate-800 flex items-center justify-between hover:border-blue-500/30 transition-colors">
-                                                <div className="flex items-center gap-4">
-                                                    <div className="p-3 bg-blue-500/10 rounded-lg text-blue-400">
-                                                        <FileText className="w-6 h-6" />
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            {documents.map(doc => (
+                                                <div key={doc.id} className="glass p-5 rounded-2xl flex items-center justify-between hover:glow-blue transition-all hover-lift">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="p-3 bg-gradient-to-br from-blue-500/20 to-indigo-500/20 rounded-xl text-blue-400 shadow-inner">
+                                                            <FileText className="w-7 h-7" />
+                                                        </div>
+                                                        <div>
+                                                            <div className="font-bold text-white text-lg">{doc.filename}</div>
+                                                            <div className="text-xs font-medium text-slate-400 tracking-wide uppercase mt-1">{doc.type} • {doc.upload_date}</div>
+                                                        </div>
                                                     </div>
-                                                    <div>
-                                                        <div className="font-semibold text-slate-200">{doc.filename}</div>
-                                                        <div className="text-xs text-slate-500 uppercase">{doc.type} • {doc.upload_date}</div>
-                                                    </div>
+                                                    <button className="text-blue-400 hover:text-blue-300 bg-blue-500/10 hover:bg-blue-500/20 p-2.5 rounded-xl transition-colors font-bold text-sm">Download</button>
                                                 </div>
-                                                <a href="#" className="text-blue-400 text-sm hover:underline">Download</a>
-                                            </div>
-                                        ))
+                                            ))}
+                                        </div>
                                     )}
                                 </div>
                             )}
@@ -240,37 +265,45 @@ export default function TenantDashboard() {
                     )}
                 </div>
 
+                {/* Modals Container */}
+
                 {showQRModal && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in p-4">
-                        <div className="bg-white p-6 rounded-2xl max-w-sm w-full relative">
-                            <button onClick={() => setShowQRModal(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"><X className="w-6 h-6" /></button>
-                            <h3 className="text-xl font-bold text-slate-900 mb-4 text-center">Scan to Pay Rent</h3>
-                            <div className="bg-slate-100 p-4 rounded-xl mb-4">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                        <div className="absolute inset-0 bg-[#030712]/80 backdrop-blur-md" onClick={() => setShowQRModal(false)}></div>
+                        <div className="glass-strong p-8 rounded-[2rem] max-w-sm w-full relative z-10 animate-in zoom-in slide-up">
+                            <button onClick={() => setShowQRModal(false)} className="absolute top-5 right-5 text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 p-2 rounded-full transition-colors"><X className="w-5 h-5" /></button>
+                            <h3 className="text-2xl font-black text-white mb-6 text-center">Scan to Pay Rent</h3>
+                            <div className="bg-white p-6 rounded-2xl mb-6 shadow-inner">
                                 <img
                                     src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=upi://pay?pa=propnexa@bank&pn=PropNexa&am=0&cu=INR`}
-                                    className="w-full h-64 object-contain mx-auto mix-blend-multiply"
+                                    className="w-full h-auto aspect-square object-contain mx-auto mix-blend-multiply"
+                                    alt="QR Code"
                                 />
                             </div>
-                            <p className="text-center text-slate-500 text-sm font-mono bg-slate-100 py-2 rounded-lg">UPI: propnexa@bank</p>
+                            <div className="text-center bg-[#0f172a] p-3 rounded-xl border border-slate-800">
+                                <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">UPI ID</p>
+                                <p className="text-white font-mono text-sm">propnexa@bank</p>
+                            </div>
                         </div>
                     </div>
                 )}
 
                 {/* New Issue Modal */}
                 {showIssueModal && (
-                    <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-                        <div className="bg-slate-900 border border-slate-700 p-6 rounded-2xl w-full max-w-md shadow-2xl animate-in zoom-in-95">
-                            <div className="flex justify-between items-center mb-4">
-                                <h3 className="text-xl font-bold text-white">Report New Issue</h3>
-                                <button onClick={() => setShowIssueModal(false)} className="text-slate-400 hover:text-white"><X className="w-5 h-5" /></button>
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                        <div className="absolute inset-0 bg-[#030712]/80 backdrop-blur-md" onClick={() => setShowIssueModal(false)}></div>
+                        <div className="glass-strong border border-white/10 p-8 rounded-[2rem] w-full max-w-md shadow-2xl relative z-10 animate-in zoom-in slide-up glow-blue">
+                            <div className="flex justify-between items-center mb-6">
+                                <h3 className="text-2xl font-black text-white">Report New Issue</h3>
+                                <button onClick={() => setShowIssueModal(false)} className="text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 p-2 rounded-full transition-colors"><X className="w-5 h-5" /></button>
                             </div>
-                            <form onSubmit={submitIssue}>
-                                <div className="mb-4">
-                                    <label className="block text-slate-400 text-sm mb-2">Category</label>
+                            <form onSubmit={submitIssue} className="space-y-5">
+                                <div>
+                                    <label className="block text-slate-300 font-semibold text-sm mb-2 tracking-wide">Category</label>
                                     <select
                                         value={newIssue.category}
                                         onChange={e => setNewIssue({ ...newIssue, category: e.target.value })}
-                                        className="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-white"
+                                        className="input-glass w-full"
                                     >
                                         <option value="plumbing">Plumbing</option>
                                         <option value="electrical">Electrical</option>
@@ -279,17 +312,17 @@ export default function TenantDashboard() {
                                         <option value="other">Other</option>
                                     </select>
                                 </div>
-                                <div className="mb-6">
-                                    <label className="block text-slate-400 text-sm mb-2">Description</label>
+                                <div>
+                                    <label className="block text-slate-300 font-semibold text-sm mb-2 tracking-wide">Description</label>
                                     <textarea
                                         value={newIssue.description}
                                         onChange={e => setNewIssue({ ...newIssue, description: e.target.value })}
-                                        className="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-white min-h-[100px]"
-                                        placeholder="Describe the issue..."
+                                        className="input-glass w-full min-h-[120px] resize-none"
+                                        placeholder="Please provide details about the issue..."
                                         required
                                     />
                                 </div>
-                                <button type="submit" className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg">Submit Request</button>
+                                <button type="submit" className="w-full btn-primary py-3.5 mt-2">Submit Maintenance Request</button>
                             </form>
                         </div>
                     </div>

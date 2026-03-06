@@ -5,8 +5,6 @@ import propnexaLogo from '../propnexa_logo.png';
 import { getAllProperties, getAllMaintenance, getAllDocuments, getAnalytics, addProperty, updateProperty, addUser, addDocument, updateMaintenanceStatus } from '../firebase/firestore';
 import { uploadDocument } from '../firebase/storage';
 
-const API_BASE = (process.env.REACT_APP_API_URL || 'http://localhost:8000').replace(/\/$/, '');
-
 function OwnerDashboard() {
   const navigate = useNavigate();
 
@@ -164,18 +162,37 @@ function OwnerDashboard() {
 
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE}/api/query`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query })
+      // Simulate backend search with client-side filtering since backend is removed
+      const lowerQuery = query.toLowerCase();
+
+      const filteredMaintenance = maintenance.filter(issue =>
+        (issue.address && issue.address.toLowerCase().includes(lowerQuery)) ||
+        (issue.description && issue.description.toLowerCase().includes(lowerQuery)) ||
+        (issue.category && issue.category.toLowerCase().includes(lowerQuery))
+      );
+
+      let answer = `Found ${filteredMaintenance.length} records matching "${query}".`;
+      let totalCost = 0;
+
+      if (filteredMaintenance.length > 0) {
+        totalCost = filteredMaintenance.reduce((sum, item) => sum + (item.cost || 0), 0);
+        if (lowerQuery.includes('cost') || lowerQuery.includes('spend') || lowerQuery.includes('total')) {
+          answer += ` The total cost for these issues is ${formatCurrency(totalCost)}.`;
+        }
+      } else {
+        answer = `No records found matching "${query}".`;
+      }
+
+      setQueryResult({
+        answer: answer,
+        data: filteredMaintenance,
+        query_type: 'search'
       });
 
-      const result = await response.json();
-      setQueryResult(result);
     } catch (error) {
       console.error('Query error:', error);
       setQueryResult({
-        answer: 'Error processing query. Make sure the backend is running.',
+        answer: 'Error processing query.',
         data: [],
         query_type: 'error'
       });
@@ -222,67 +239,70 @@ function OwnerDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-50 font-sans selection:bg-blue-500/30">
-      <div className="container mx-auto p-6 max-w-7xl">
+    <div className="min-h-screen bg-[#030712] text-slate-50 font-sans selection:bg-blue-500/30 relative overflow-hidden">
+      {/* Background Decor */}
+      <div className="fixed top-[-10%] left-[-10%] w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none animate-pulse glow-blue z-0"></div>
+      <div className="fixed bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none animate-pulse delay-700 glow-accent z-0"></div>
+
+      <div className="container mx-auto p-6 max-w-7xl relative z-10 animate-in slide-up">
         {/* Header */}
-        <div className="mb-8 border-b border-blue-900/20 pb-6">
-          <div className="flex items-center gap-4 mb-2">
-            <div className="relative group">
-              <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-cyan-500 rounded-full blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200"></div>
+        <div className="mb-8 glass p-6 rounded-3xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+          <div className="flex items-center gap-5">
+            <div className="relative group w-20 h-20 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10 glow-blue">
               <img
                 src={propnexaLogo}
                 alt="PropNexa Logo"
-                className="relative w-20 h-20 object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-300"
+                className="relative w-14 h-14 object-contain drop-shadow-2xl group-hover:scale-110 transition-transform duration-500"
               />
             </div>
             <div>
-              <h1 className="text-5xl font-extrabold tracking-tight bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-600 bg-clip-text text-transparent font-serif" style={{ fontFamily: 'Playfair Display, serif' }}>
-                PROPNEXA
+              <h1 className="text-4xl md:text-5xl font-black tracking-tight bg-gradient-to-b from-white via-blue-100 to-blue-400 bg-clip-text text-transparent">
+                PropNexa
               </h1>
-              <p className="text-slate-400 font-medium tracking-wide text-sm mt-1 uppercase">Full Stack AI-Powered Property Management</p>
+              <p className="text-blue-400 font-bold tracking-widest text-xs mt-2 uppercase">Full Stack AI-Powered Property Management</p>
             </div>
           </div>
 
-          <div className="flex gap-3">
-            <button onClick={() => navigate('/')} className="flex items-center gap-2 px-4 py-2 bg-slate-800/50 hover:bg-blue-900/20 text-slate-400 hover:text-blue-400 rounded-lg transition-all border border-slate-700 hover:border-blue-500/30">
+          <div className="flex gap-4">
+            <button onClick={() => navigate('/')} className="flex items-center gap-2 px-5 py-2.5 glass-card hover:bg-white/10 text-slate-300 hover:text-white rounded-xl transition-all hover-lift font-semibold text-sm">
               <Home className="w-4 h-4" /> Home
             </button>
-            <button onClick={handleLogout} className="flex items-center gap-2 px-4 py-2 bg-slate-800/50 hover:bg-red-900/20 text-slate-400 hover:text-red-400 rounded-lg transition-all border border-slate-700 hover:border-red-500/30">
+            <button onClick={handleLogout} className="flex items-center gap-2 px-5 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 rounded-xl transition-all border border-red-500/20 hover:border-red-500/40 hover-lift font-semibold text-sm">
               <LogOut className="w-4 h-4" /> Logout
             </button>
           </div>
         </div>
 
         {/* Search Bar */}
-        <div className="mb-8 glass-strong rounded-2xl p-6 glow-blue animate-fade-in">
-          <div className="flex gap-3">
+        <div className="mb-10 glass-strong rounded-[2rem] p-8 glow-blue animate-in fade-in slide-up delay-100">
+          <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative group">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500/50 w-5 h-5 group-focus-within:text-blue-400 group-focus-within:scale-110 transition-all duration-300" />
+              <Search className="absolute left-6 top-1/2 transform -translate-y-1/2 text-blue-500/50 w-6 h-6 group-focus-within:text-blue-400 group-focus-within:scale-110 transition-all duration-300" />
               <input
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleQuery()}
-                placeholder="Ask AI: 'Show maintenance for Galaxy Heights', 'Rent for Villa 12', 'Expiring Leases'..."
-                className="w-full input-glass pl-12 pr-4 py-4 rounded-xl placeholder:text-slate-500 focus:border-blue-500/50 transition-all shadow-inner"
+                placeholder="Ask AI: 'Show maintenance for Galaxy...', 'Expiring Leases'..."
+                className="w-full input-glass pl-16 pr-6 py-5 rounded-2xl text-lg placeholder:text-slate-500"
               />
             </div>
             <button
               onClick={handleQuery}
               disabled={loading}
-              className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-primary py-5 px-8 text-lg rounded-2xl md:w-auto w-full"
             >
               {loading ? 'Processing...' : 'Search'}
             </button>
           </div>
 
           {queryResult && (
-            <div className="mt-4 p-6 glass rounded-xl glow-blue animate-slide-up">
-              <p className="text-lg mb-4 text-slate-50 leading-relaxed border-l-4 border-blue-500 pl-4">{queryResult.answer}</p>
+            <div className="mt-6 p-6 glass-card rounded-2xl glow-blue animate-in slide-up">
+              <p className="text-lg mb-6 text-slate-50 font-medium leading-relaxed border-l-4 border-blue-500 pl-4">{queryResult.answer}</p>
               {queryResult.data && queryResult.data.length > 0 && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
                   {queryResult.data.map((item, idx) => (
-                    <div key={idx} className={`bubble p-5 rounded-xl text-sm transition-all duration-300 animate-fade-in delay-${Math.min(idx, 4) * 100}`}>
+                    <div key={idx} className="glass p-6 rounded-2xl transition-all duration-300 hover:border-blue-500/30 hover-lift">
                       {item.address && <div className="font-bold text-blue-300 mb-2 text-base">{item.address}</div>}
                       {item.description && <div className="text-slate-100/90 mb-3 leading-relaxed">{item.description}</div>}
                       <div className="flex flex-wrap gap-2 text-xs">
@@ -299,28 +319,28 @@ function OwnerDashboard() {
         </div>
 
         {/* Tabs */}
-        <div className="flex flex-wrap gap-2 mb-8 glass p-2 rounded-xl">
+        <div className="flex flex-wrap gap-2 md:gap-3 mb-10 glass p-3 rounded-2xl animate-in fade-in slide-up delay-200">
           {[
             { id: 'dashboard', label: 'Dashboard', icon: TrendingUp },
             { id: 'properties', label: 'Properties', icon: Building2 },
             { id: 'maintenance', label: 'Maintenance', icon: Wrench },
             { id: 'documents', label: 'Documents', icon: FileText },
-            { id: 'collect', label: 'Collect Rent', icon: DollarSign },
-            { id: 'issue', label: 'Issue Receipts', icon: FileText },
+            { id: 'collect', label: 'Transactions', icon: DollarSign },
+            { id: 'issue', label: 'Receipts', icon: Printer },
             { id: 'add_tenant', label: 'Add Tenant', icon: UserPlus },
-            { id: 'add_property', label: 'Add Property', icon: Building2 },
-            { id: 'upload', label: 'Upload Documents', icon: Upload }
+            { id: 'add_property', label: 'Add Property', icon: Home },
+            { id: 'upload', label: 'Upload Doc', icon: Upload }
           ].map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 min-w-[100px] py-3 px-4 rounded-lg font-semibold transition-all duration-300 capitalize tracking-wide flex items-center justify-center gap-2 ${activeTab === tab.id
-                ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-900/50 glow-blue scale-105'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-blue-900/20 hover:scale-102'
+              className={`flex-1 min-w-[120px] py-3.5 px-4 rounded-xl font-bold transition-all duration-300 capitalize flex items-center justify-center gap-2 ${activeTab === tab.id
+                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-900/40 glow-blue'
+                : 'text-slate-400 hover:text-white hover:bg-white/5'
                 }`}
             >
               <tab.icon className="w-4 h-4" />
-              {tab.label}
+              <span className="truncate">{tab.label}</span>
             </button>
           ))}
         </div>
@@ -328,67 +348,71 @@ function OwnerDashboard() {
         {/* Dashboard Tab */}
         {
           activeTab === 'dashboard' && analytics && (
-            <div className="animate-in fade-in zoom-in-95 duration-300">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <div className="glass-card p-6 rounded-2xl glow-on-hover hover-lift group cursor-pointer">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="p-3 bg-blue-500/10 rounded-xl group-hover:bg-blue-500/20 transition-all duration-300 group-hover:scale-110">
+            <div className="animate-in fade-in slide-up delay-300">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+                <div className="glass-card p-6 rounded-3xl glow-on-hover hover-lift group cursor-pointer relative overflow-hidden">
+                  <div className="absolute top-[-50%] right-[-10%] w-[150px] h-[150px] bg-blue-500/10 rounded-full blur-[40px] group-hover:bg-blue-500/20 transition-colors"></div>
+                  <div className="flex justify-between items-start mb-4 relative z-10">
+                    <div className="p-3.5 bg-gradient-to-br from-blue-500/20 to-indigo-500/20 rounded-2xl group-hover:scale-110 transition-transform duration-300 shadow-inner border border-blue-500/20">
                       <Building2 className="w-6 h-6 text-blue-400" />
                     </div>
-                    <span className="text-xs font-bold px-2 py-1 bg-slate-800/50 rounded-lg text-slate-400">Total</span>
+                    <span className="text-xs font-bold px-2.5 py-1 bg-white/5 border border-white/10 rounded-lg text-slate-300 backdrop-blur-sm">Total</span>
                   </div>
-                  <div className="text-3xl font-bold mb-1 text-white">{analytics.total_properties}</div>
-                  <div className="text-slate-400 text-sm">Properties Managed</div>
+                  <div className="text-4xl font-black mb-1 text-white tracking-tight relative z-10">{analytics.total_properties}</div>
+                  <div className="text-blue-200/70 font-medium text-sm tracking-wide uppercase relative z-10">Properties Managed</div>
                 </div>
 
-                <div className="glass-card p-6 rounded-2xl glow-on-hover hover-lift group cursor-pointer">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="p-3 bg-emerald-500/10 rounded-xl group-hover:bg-emerald-500/20 transition-all duration-300 group-hover:scale-110">
+                <div className="glass-card p-6 rounded-3xl glow-on-hover hover-lift group cursor-pointer relative overflow-hidden">
+                  <div className="absolute top-[-50%] right-[-10%] w-[150px] h-[150px] bg-emerald-500/10 rounded-full blur-[40px] group-hover:bg-emerald-500/20 transition-colors"></div>
+                  <div className="flex justify-between items-start mb-4 relative z-10">
+                    <div className="p-3.5 bg-gradient-to-br from-emerald-500/20 to-teal-500/20 rounded-2xl group-hover:scale-110 transition-transform duration-300 shadow-inner border border-emerald-500/20">
                       <DollarSign className="w-6 h-6 text-emerald-400" />
                     </div>
-                    <span className="text-xs font-bold px-2 py-1 bg-slate-800/50 rounded-lg text-slate-400">Monthly</span>
+                    <span className="text-xs font-bold px-2.5 py-1 bg-white/5 border border-white/10 rounded-lg text-slate-300 backdrop-blur-sm">Monthly</span>
                   </div>
-                  <div className="text-3xl font-bold mb-1 text-white">{formatCurrency(analytics.total_monthly_rent)}</div>
-                  <div className="text-slate-400 text-sm">Total Rent Roll</div>
+                  <div className="text-4xl font-black mb-1 text-white tracking-tight relative z-10">{formatCurrency(analytics.total_monthly_rent)}</div>
+                  <div className="text-emerald-200/70 font-medium text-sm tracking-wide uppercase relative z-10">Total Rent Roll</div>
                 </div>
 
-                <div className="glass-card p-6 rounded-2xl glow-on-hover hover-lift group cursor-pointer">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="p-3 bg-orange-500/10 rounded-xl group-hover:bg-orange-500/20 transition-all duration-300 group-hover:scale-110">
+                <div className="glass-card p-6 rounded-3xl glow-on-hover hover-lift group cursor-pointer relative overflow-hidden">
+                  <div className="absolute top-[-50%] right-[-10%] w-[150px] h-[150px] bg-orange-500/10 rounded-full blur-[40px] group-hover:bg-orange-500/20 transition-colors"></div>
+                  <div className="flex justify-between items-start mb-4 relative z-10">
+                    <div className="p-3.5 bg-gradient-to-br from-orange-500/20 to-red-500/20 rounded-2xl group-hover:scale-110 transition-transform duration-300 shadow-inner border border-orange-500/20">
                       <Wrench className="w-6 h-6 text-orange-400" />
                     </div>
-                    <span className="text-xs font-bold px-2 py-1 bg-slate-800/50 rounded-lg text-slate-400">Active</span>
+                    <span className="text-xs font-bold px-2.5 py-1 bg-white/5 border border-white/10 rounded-lg text-slate-300 backdrop-blur-sm">Active</span>
                   </div>
-                  <div className="text-3xl font-bold mb-1 text-white">{analytics.active_issues}</div>
-                  <div className="text-slate-400 text-sm">Maintenance Issues</div>
+                  <div className="text-4xl font-black mb-1 text-white tracking-tight relative z-10">{analytics.active_issues}</div>
+                  <div className="text-orange-200/70 font-medium text-sm tracking-wide uppercase relative z-10">Maintenance Issues</div>
                 </div>
 
-                <div className="glass-card p-6 rounded-2xl glow-on-hover hover-lift group cursor-pointer">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="p-3 bg-purple-500/10 rounded-xl group-hover:bg-purple-500/20 transition-all duration-300 group-hover:scale-110">
+                <div className="glass-card p-6 rounded-3xl glow-on-hover hover-lift group cursor-pointer relative overflow-hidden">
+                  <div className="absolute top-[-50%] right-[-10%] w-[150px] h-[150px] bg-purple-500/10 rounded-full blur-[40px] group-hover:bg-purple-500/20 transition-colors"></div>
+                  <div className="flex justify-between items-start mb-4 relative z-10">
+                    <div className="p-3.5 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-2xl group-hover:scale-110 transition-transform duration-300 shadow-inner border border-purple-500/20">
                       <TrendingUp className="w-6 h-6 text-purple-400" />
                     </div>
-                    <span className="text-xs font-bold px-2 py-1 bg-slate-800/50 rounded-lg text-slate-400">YTD</span>
+                    <span className="text-xs font-bold px-2.5 py-1 bg-white/5 border border-white/10 rounded-lg text-slate-300 backdrop-blur-sm">YTD</span>
                   </div>
-                  <div className="text-3xl font-bold mb-1 text-white">{formatCurrency(analytics.total_maintenance_cost)}</div>
-                  <div className="text-slate-400 text-sm">Maintenance Cost</div>
+                  <div className="text-4xl font-black mb-1 text-white tracking-tight relative z-10">{formatCurrency(analytics.total_maintenance_cost)}</div>
+                  <div className="text-purple-200/70 font-medium text-sm tracking-wide uppercase relative z-10">Maintenance Cost</div>
                 </div>
               </div>
 
-              <div className="glass-strong p-8 rounded-2xl glow-blue">
-                <h3 className="text-xl font-bold mb-6 text-white">Maintenance by Category</h3>
+              <div className="glass-strong p-8 rounded-3xl glow-blue">
+                <h3 className="text-2xl font-black mb-6 text-white tracking-tight">Maintenance by Category</h3>
                 <div className="space-y-4">
                   {analytics.issues_by_category.map((cat, idx) => (
-                    <div key={idx} className="bubble p-5 rounded-xl transition-all duration-300 cursor-pointer">
+                    <div key={idx} className="glass p-5 rounded-2xl transition-all duration-300 hover-lift hover:border-blue-500/40 cursor-pointer">
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className="w-2 h-12 bg-gradient-to-b from-blue-400 to-blue-600 rounded-full shadow-lg shadow-blue-500/50"></div>
+                        <div className="flex items-center gap-5">
+                          <div className="w-2 h-14 bg-gradient-to-b from-blue-400 to-indigo-600 rounded-full shadow-lg shadow-blue-500/50"></div>
                           <div>
-                            <div className="font-bold capitalize text-slate-100 text-lg">{cat.category}</div>
-                            <div className="text-sm text-slate-400">{cat.count} issue{cat.count !== 1 ? 's' : ''}</div>
+                            <div className="font-bold capitalize text-white text-lg">{cat.category}</div>
+                            <div className="text-sm text-slate-400 font-medium">{cat.count} issue{cat.count !== 1 ? 's' : ''}</div>
                           </div>
                         </div>
-                        <div className="text-green-400 font-bold font-mono bg-slate-900/50 px-4 py-2 rounded-lg border border-green-500/30 shadow-lg">
+                        <div className="text-emerald-400 font-bold font-mono bg-emerald-500/10 px-4 py-2 rounded-xl border border-emerald-500/20 shadow-inner">
                           {formatCurrency(cat.total_cost)}
                         </div>
                       </div>
@@ -403,26 +427,29 @@ function OwnerDashboard() {
         {/* Properties Tab */}
         {
           activeTab === 'properties' && (
-            <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4">
+            <div className="space-y-5 animate-in fade-in slide-up delay-300">
               {properties.map((prop, idx) => (
-                <div key={prop.id} className={`glass-card p-6 rounded-2xl glow-on-hover hover-lift cursor-pointer animate-fade-in delay-${Math.min(idx, 4) * 100}`}>
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h3 className="text-2xl font-bold text-blue-400 mb-1">{prop.address}</h3>
-                      <div className="flex items-center gap-2 text-sm text-slate-400">
-                        <span className="px-3 py-1 bg-slate-800/50 rounded-lg border border-slate-700/50">{prop.type}</span>
-                        <span>•</span>
-                        <span className="text-slate-300">{prop.leaseType}</span>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-2xl font-bold text-green-400">{formatCurrency(prop.rentAmount)}<span className="text-base text-green-400/50 font-normal">/mo</span></div>
-                      <div className="text-slate-500 text-sm mt-1">Expires: <span className="text-slate-300">{prop.leaseEndDate}</span></div>
+                <div key={prop.id} className="glass-card p-6 rounded-3xl glow-on-hover hover-lift cursor-pointer flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                  <div>
+                    <h3 className="text-2xl font-black text-white mb-2 tracking-tight">{prop.address}</h3>
+                    <div className="flex flex-wrap items-center gap-2 text-sm text-slate-300 font-medium">
+                      <span className="px-3 py-1 bg-white/5 rounded-md border border-white/10">{prop.type}</span>
+                      <span className="text-slate-500">•</span>
+                      <span className="px-3 py-1 bg-blue-500/10 text-blue-400 rounded-md border border-blue-500/20">{prop.leaseType} Leased</span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 text-slate-300 bg-slate-900/40 p-3 rounded-xl border border-blue-500/20 inline-flex">
-                    <Users className="w-4 h-4" />
-                    <span>Tenant: <span className="text-slate-100 font-medium">{prop.tenantName}</span></span>
+                  <div className="text-left md:text-right w-full md:w-auto">
+                    <div className="text-3xl font-black text-emerald-400 tracking-tight">{formatCurrency(prop.rentAmount)}<span className="text-sm text-emerald-400/50 font-normal ml-1 uppercase">/ mo</span></div>
+                    <div className="text-slate-400 text-xs font-semibold tracking-wide uppercase mt-2">Expires: <span className="text-white">{prop.leaseEndDate}</span></div>
+                  </div>
+                  <div className="w-full md:w-auto flex items-center gap-3 bg-white/5 p-4 rounded-2xl border border-white/5">
+                    <div className="p-2 bg-gradient-to-br from-blue-500/20 to-indigo-500/20 rounded-xl">
+                      <Users className="w-5 h-5 text-blue-400" />
+                    </div>
+                    <div>
+                      <div className="text-xs text-slate-400 font-semibold tracking-wider uppercase mb-0.5">Current Tenant</div>
+                      <div className="text-slate-50 font-bold">{prop.tenantName}</div>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -433,38 +460,36 @@ function OwnerDashboard() {
         {/* Maintenance Tab */}
         {
           activeTab === 'maintenance' && (
-            <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4">
+            <div className="space-y-4 animate-in fade-in slide-up delay-300">
               {maintenance.map((issue, idx) => (
-                <div key={issue.id} className={`bubble p-6 rounded-xl cursor-pointer animate-fade-in delay-${Math.min(idx, 4) * 100}`}>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <div className="font-bold text-blue-300 text-lg mb-1">{issue.address}</div>
-                      <div className="text-slate-100/90 mt-1 mb-3 leading-relaxed">{issue.description}</div>
-                      <div className="flex items-center gap-3 text-xs text-slate-400">
-                        <span className="bg-slate-800/50 px-3 py-1.5 rounded-lg border border-slate-700/50">📅 {issue.date}</span>
-                        <span>•</span>
-                        <span className="text-slate-300">👷 {issue.vendor}</span>
-                        <span>•</span>
-                        <span className="uppercase tracking-wider font-semibold bg-slate-800/50 px-2 py-1 rounded">{issue.category}</span>
+                <div key={issue.id} className="glass p-6 rounded-3xl cursor-pointer hover-lift transition-all hover:border-blue-500/30">
+                  <div className="flex flex-col md:flex-row justify-between items-start gap-6">
+                    <div className="flex-1">
+                      <div className="font-black text-white text-xl mb-2 tracking-tight">{issue.address}</div>
+                      <div className="text-slate-300 mb-4 leading-relaxed font-medium">{issue.description}</div>
+                      <div className="flex flex-wrap items-center gap-3 text-xs text-slate-300 font-semibold tracking-wide">
+                        <span className="bg-white/5 px-3 py-1.5 rounded-md border border-white/10 uppercase">📅 {issue.date}</span>
+                        <span className="bg-white/5 px-3 py-1.5 rounded-md border border-white/10 uppercase text-blue-300">👷 {issue.vendor}</span>
+                        <span className="bg-gradient-to-r from-blue-600/20 to-indigo-600/20 text-blue-300 px-3 py-1.5 rounded-md border border-blue-500/20 uppercase">{issue.category}</span>
                       </div>
                     </div>
-                    <div className="text-right flex flex-col items-end gap-2">
-                      <div className="text-slate-100 font-bold text-xl">{formatCurrency(issue.cost)}</div>
-                      <div className={`text-xs px-3 py-1.5 rounded-full font-medium shadow-lg ${issue.status === 'Resolved'
-                        ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-                        : 'bg-orange-500/20 text-orange-400 border border-orange-500/30 animate-glow-pulse'
+                    <div className="text-left md:text-right flex flex-col md:items-end gap-3 w-full md:w-auto">
+                      <div className="text-slate-50 font-black text-2xl tracking-tight">{formatCurrency(issue.cost)}</div>
+                      <div className={`text-xs px-4 py-1.5 rounded-full font-bold tracking-widest uppercase border ${issue.status === 'Resolved'
+                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                        : 'bg-orange-500/10 text-orange-400 border-orange-500/20 animate-glow-pulse'
                         }`}>
                         {issue.status}
                       </div>
+                      {issue.status !== 'Resolved' && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); resolveIssue(issue.id); }}
+                          className="mt-2 text-xs btn-primary bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 py-1.5 px-4 shadow-none"
+                        >
+                          <CheckCircle className="w-3 h-3 inline mr-1" /> Mark Resolved
+                        </button>
+                      )}
                     </div>
-                    {issue.status !== 'Resolved' && (
-                      <button
-                        onClick={(e) => { e.stopPropagation(); resolveIssue(issue.id); }}
-                        className="mt-2 text-xs bg-green-600/20 text-green-400 px-3 py-1.5 rounded-lg border border-green-500/30 hover:bg-green-600/40 transition-colors font-medium flex items-center gap-1 ml-auto"
-                      >
-                        <CheckCircle className="w-3 h-3" /> Mark Resolved
-                      </button>
-                    )}
                   </div>
                 </div>
               ))}
@@ -475,23 +500,28 @@ function OwnerDashboard() {
         {/* Documents Tab */}
         {
           activeTab === 'documents' && (
-            <div className="space-y-3 animate-in fade-in slide-in-from-bottom-4">
+            <div className="space-y-4 animate-in fade-in slide-up delay-300">
               {documents.map((doc, idx) => (
-                <div key={doc.id} className={`glass-card p-5 rounded-xl flex items-center justify-between glow-on-hover hover-lift group cursor-pointer animate-fade-in delay-${Math.min(idx, 4) * 100}`}>
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 bg-slate-800/50 rounded-lg group-hover:bg-blue-500/10 transition-all duration-300 group-hover:scale-110">
-                      <FileText className="w-6 h-6 text-blue-400 group-hover:text-blue-300" />
+                <div key={doc.id} className="glass p-5 rounded-3xl flex flex-col md:flex-row items-start md:items-center justify-between glow-on-hover hover-lift group cursor-pointer border border-white/5 hover:border-blue-500/30 gap-4">
+                  <div className="flex items-center gap-5">
+                    <div className="p-4 bg-gradient-to-br from-blue-500/10 to-indigo-500/10 rounded-2xl group-hover:bg-blue-500/20 transition-all duration-300 group-hover:scale-110 border border-blue-500/10">
+                      <FileText className="w-7 h-7 text-blue-400 group-hover:text-blue-300" />
                     </div>
                     <div>
-                      <div className="font-semibold text-slate-100">{doc.filename}</div>
-                      <div className="text-sm text-slate-400 mt-0.5">
-                        📁 {doc.propertyId} • 📅 {doc.uploadDate}
+                      <div className="font-bold text-white text-lg mb-0.5 tracking-tight">{doc.filename}</div>
+                      <div className="text-xs font-semibold text-slate-400 tracking-wide uppercase">
+                        📁 Property ID: {doc.propertyId} <span className="text-slate-600 mx-2">•</span> 📅 {doc.uploadDate}
                       </div>
                     </div>
                   </div>
-                  <span className="px-3 py-1.5 bg-blue-500/10 text-blue-400 rounded-full text-xs font-medium border border-blue-500/20">
-                    {doc.type}
-                  </span>
+                  <div className="flex items-center gap-3 w-full md:w-auto mt-2 md:mt-0">
+                    <span className="px-4 py-1.5 bg-blue-500/10 text-blue-400 rounded-full text-xs font-bold border border-blue-500/20 uppercase tracking-widest whitespace-nowrap">
+                      {doc.type}
+                    </span>
+                    <button className="p-2.5 bg-white/5 hover:bg-blue-500/20 text-slate-400 hover:text-blue-300 rounded-xl transition-colors shrink-0">
+                      <Download className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -502,30 +532,38 @@ function OwnerDashboard() {
         {/* Collect Rent Tab (Landlord View) */}
         {
           activeTab === 'collect' && (
-            <div className="animate-in fade-in zoom-in-95 grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="glass-strong p-8 rounded-2xl glow-blue flex flex-col">
-                <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
-                  <DollarSign className="w-6 h-6 text-green-400" /> Rent Collection Status
-                </h3>
+            <div className="animate-in fade-in slide-up delay-300 grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="lg:col-span-2 glass-strong p-8 rounded-3xl glow-blue flex flex-col">
+                <div className="flex items-center gap-4 mb-8">
+                  <div className="p-3 bg-gradient-to-br from-emerald-500/20 to-teal-500/20 rounded-2xl border border-emerald-500/20">
+                    <DollarSign className="w-8 h-8 text-emerald-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-black text-white tracking-tight">Rent Collection Status</h3>
+                    <p className="text-slate-400 text-sm font-medium">Manage and track pending payments</p>
+                  </div>
+                </div>
 
                 <div className="space-y-4">
                   {properties.map(prop => (
-                    <div key={prop.id} className="p-4 bg-slate-900/60 rounded-xl border border-blue-500/10 flex justify-between items-center group hover:border-blue-500/30 transition-all">
-                      <div>
-                        <div className="font-semibold text-slate-200">{prop.address.split(',')[0]}</div>
-                        <div className="text-sm text-slate-400">{prop.tenantName}</div>
+                    <div key={prop.id} className="glass p-5 rounded-2xl border border-white/5 flex flex-col md:flex-row justify-between items-start md:items-center hover:border-blue-500/30 hover-lift transition-all gap-4">
+                      <div className="flex-1">
+                        <div className="font-bold text-white text-lg mb-1">{prop.address.split(',')[0]}</div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <span className="text-slate-400 font-medium">Tenant: <span className="text-slate-200">{prop.tenantName}</span></span>
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <div className="text-xl font-bold text-white">{formatCurrency(prop.rentAmount)}</div>
-                        <div className="flex gap-2 mt-2 justify-end">
+                      <div className="text-left md:text-right w-full md:w-auto">
+                        <div className="text-2xl font-black text-white">{formatCurrency(prop.rentAmount)}</div>
+                        <div className="flex flex-wrap gap-2 mt-3 justify-start md:justify-end">
                           <button
-                            className="text-xs bg-green-600/20 text-green-400 px-2 py-1 rounded flex items-center gap-1 hover:bg-green-600/40"
+                            className="text-xs font-bold btn-primary bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 py-1.5 px-4 shadow-none"
                             onClick={() => alert(`Marked ${prop.address} as PAID`)}
                           >
-                            <CheckCircle className="w-3 h-3" /> Mark Paid
+                            <CheckCircle className="w-3 h-3 inline mr-1" /> Mark Paid
                           </button>
                           <button
-                            className="text-xs bg-blue-600/20 text-blue-400 px-2 py-1 rounded flex items-center gap-1 hover:bg-blue-600/40"
+                            className="text-xs font-bold bg-white/10 hover:bg-blue-500/20 transition-colors text-blue-300 py-1.5 px-4 rounded-xl flex items-center gap-1 border border-white/10 hover:border-blue-500/30"
                             onClick={() => window.open(`https://wa.me/?text=Hello ${prop.tenantName}, this is a reminder to pay rent of ${formatCurrency(prop.rentAmount)} for ${prop.address}. Please pay via UPI.`, '_blank')}
                           >
                             <Send className="w-3 h-3" /> Remind
@@ -537,20 +575,33 @@ function OwnerDashboard() {
                 </div>
               </div>
 
-              <div className="glass-card p-6 rounded-2xl flex flex-col items-center justify-center text-center">
-                <h3 className="text-xl font-bold text-blue-400 mb-2">Receive Payments</h3>
-                <p className="text-slate-400 mb-6 text-sm">Show this QR to tenants for direct payment</p>
+              <div className="glass-card p-8 rounded-3xl flex flex-col items-center justify-center text-center relative overflow-hidden h-fit sticky top-6">
+                <div className="absolute inset-0 bg-gradient-to-b from-blue-500/10 to-transparent pointer-events-none"></div>
 
-                <div className="bg-white p-4 rounded-2xl shadow-xl mb-6">
-                  <img
-                    src={`${API_BASE}/api/qr?t=${Date.now()}`}
-                    onError={(e) => e.target.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=upi://pay?pa=propnexa@bank&pn=PropNexa&am=0&cu=INR`}
-                    alt="My UPI QR Code"
-                    className="w-64 h-64 object-contain"
-                  />
+                <h3 className="text-2xl font-black text-white mb-2 relative z-10">Receive Payments</h3>
+                <p className="text-slate-400 font-medium text-sm mb-8 relative z-10">Show this QR to tenants for direct transfer</p>
+
+                <div className="bg-white p-6 rounded-[2rem] shadow-2xl shadow-blue-900/40 mb-8 relative z-10 border-4 border-white/10">
+                  <div className="border border-slate-200 rounded-xl overflow-hidden p-2">
+                    <img
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=upi://pay?pa=propnexa@bank&pn=PropNexa&am=0&cu=INR`}
+                      onError={(e) => e.target.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=upi://pay?pa=propnexa@bank&pn=PropNexa&am=0&cu=INR`}
+                      alt="My UPI QR Code"
+                      className="w-56 h-56 md:w-64 md:h-64 object-contain mix-blend-multiply"
+                    />
+                  </div>
                 </div>
-                <input type="file" onChange={handleQRUpload} className="text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
-                <p className="text-xs text-slate-500 mt-2">Scan via GPay / PhonePe / Paytm</p>
+
+                <label className="relative z-10 cursor-pointer text-xs font-bold bg-white/5 hover:bg-white/10 text-slate-300 py-2.5 px-6 rounded-xl border border-white/10 transition-all uppercase tracking-wider">
+                  <Upload className="w-3 h-3 inline mr-2" /> Upload Custom QR
+                  <input type="file" onChange={handleQRUpload} className="hidden" />
+                </label>
+
+                <p className="text-xs text-slate-500 mt-6 font-medium relative z-10 bg-[#030712] px-4 py-2 rounded-full border border-white/5 shadow-inner">UPI: propnexa@bank</p>
+
+                <div className="flex items-center gap-3 mt-4 text-xs font-bold text-slate-400 grayscale opacity-60">
+                  <span>GPay</span> • <span>PhonePe</span> • <span>Paytm</span>
+                </div>
               </div>
             </div>
           )
@@ -559,31 +610,40 @@ function OwnerDashboard() {
         {/* Issue Receipts Tab (Landlord View) */}
         {
           activeTab === 'issue' && (
-            <div className="animate-in fade-in zoom-in-95 max-w-3xl mx-auto">
-              <div className="glass-strong p-8 rounded-2xl glow-blue">
-                <div className="flex justify-between items-center mb-6 border-b border-slate-700/50 pb-4">
-                  <h3 className="text-2xl font-bold text-white flex items-center gap-2">
-                    <FileText className="w-6 h-6 text-blue-400" /> Issue Rent Receipts
-                  </h3>
-                  <button className="btn-primary flex items-center gap-2 py-2 px-4 shadow-none text-sm" onClick={() => window.open(`https://wa.me/?text=Here is your rent receipt for ${receiptDetails.month}. Amount: ${receiptDetails.amount}. Property: ${properties.find(p => p.id === receiptDetails.tenant_id)?.address}`, '_blank')}>
-                    <Share2 className="w-4 h-4" /> Send to Tenant
+            <div className="animate-in fade-in slide-up delay-300 max-w-4xl mx-auto">
+              <div className="glass-strong p-8 md:p-10 rounded-[2.5rem] glow-blue shadow-2xl">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 border-b border-white/10 pb-6 gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-gradient-to-br from-blue-500/20 to-indigo-500/20 rounded-2xl border border-blue-500/20">
+                      <FileText className="w-8 h-8 text-blue-400" />
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-black text-white tracking-tight">Generate Rent Receipt</h3>
+                      <p className="text-slate-400 text-sm font-medium">Create and share official receipts</p>
+                    </div>
+                  </div>
+                  <button className="btn-primary flex items-center gap-2 py-3 px-6 shadow-none font-bold" onClick={() => window.open(`https://wa.me/?text=Here is your rent receipt for ${receiptDetails.month}. Amount: ${receiptDetails.amount}. Property: ${properties.find(p => p.id === receiptDetails.tenant_id)?.address}`, '_blank')}>
+                    <Share2 className="w-4 h-4" /> Share to WhatsApp
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
                   <div>
-                    <label className="block text-slate-400 mb-2 text-sm">Select Tenant / Property</label>
-                    <select value={receiptDetails.tenant_id} onChange={e => {
-                      const p = properties.find(x => x.id === e.target.value);
-                      setReceiptDetails({ ...receiptDetails, tenant_id: e.target.value, amount: p ? p.rentAmount : '' });
-                    }} className="w-full input-glass p-3 rounded-lg bg-slate-900 text-slate-300">
-                      <option value="">Select Tenant</option>
-                      {properties.map(p => <option key={p.id} value={p.id}>{p.tenantName} - {p.address}</option>)}
-                    </select>
+                    <label className="block text-slate-400 mb-2 text-sm font-bold uppercase tracking-wider pl-1">Select Tenant / Property</label>
+                    <div className="relative">
+                      <select value={receiptDetails.tenant_id} onChange={e => {
+                        const p = properties.find(x => x.id === e.target.value);
+                        setReceiptDetails({ ...receiptDetails, tenant_id: e.target.value, amount: p ? p.rentAmount : '' });
+                      }} className="w-full input-glass p-4 rounded-2xl bg-[#030712]/50 text-white appearance-none cursor-pointer">
+                        <option value="">Choose a Tenant</option>
+                        {properties.map(p => <option key={p.id} value={p.id}>{p.tenantName} - {p.address}</option>)}
+                      </select>
+                      <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-slate-400">▼</div>
+                    </div>
                   </div>
                   <div>
-                    <label className="block text-slate-400 mb-2 text-sm">For Month</label>
-                    <input type="month" value={receiptDetails.month} onChange={e => setReceiptDetails({ ...receiptDetails, month: e.target.value })} className="w-full input-glass p-3 rounded-lg bg-slate-900 text-slate-300" />
+                    <label className="block text-slate-400 mb-2 text-sm font-bold uppercase tracking-wider pl-1">For Month</label>
+                    <input type="month" value={receiptDetails.month} onChange={e => setReceiptDetails({ ...receiptDetails, month: e.target.value })} className="w-full input-glass p-4 rounded-2xl bg-[#030712]/50 text-white css-invert-calendar" />
                   </div>
                 </div>
 
@@ -709,117 +769,124 @@ function OwnerDashboard() {
               <form onSubmit={handleOnboardTenant} className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Property Selection */}
                 <div className="md:col-span-2">
-                  <label className="block text-slate-400 mb-2 pl-1">Assign Property</label>
-                  <select
-                    value={newTenant.property_id}
-                    onChange={e => setNewTenant({ ...newTenant, property_id: e.target.value })}
-                    className="w-full bg-slate-900 border border-slate-700/50 rounded-xl p-4 text-white focus:outline-none focus:border-blue-500 transition-colors"
-                    required
-                  >
-                    <option value="">Select Property</option>
-                    {properties.map(p => (
-                      <option key={p.id} value={p.id}>{p.address} {p.tenantName ? `(Current: ${p.tenantName})` : '(Vacant)'}</option>
-                    ))}
-                  </select>
+                  <label className="block text-slate-400 mb-2 pl-1 font-bold uppercase tracking-wider text-xs">Assign Property</label>
+                  <div className="relative">
+                    <select
+                      value={newTenant.property_id}
+                      onChange={e => setNewTenant({ ...newTenant, property_id: e.target.value })}
+                      className="w-full input-glass p-4 rounded-2xl text-white appearance-none cursor-pointer"
+                      required
+                    >
+                      <option value="">Select Property</option>
+                      {properties.map(p => (
+                        <option key={p.id} value={p.id}>{p.address} {p.tenantName ? `(Current: ${p.tenantName})` : '(Vacant)'}</option>
+                      ))}
+                    </select>
+                    <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-slate-400">▼</div>
+                  </div>
                 </div>
 
-                <div className="space-y-4">
-                  <h4 className="text-blue-400 font-bold uppercase text-xs tracking-wider border-b border-blue-500/20 pb-2 mb-4">Personal Details</h4>
+                <div className="space-y-5 glass p-6 rounded-3xl">
+                  <h4 className="text-blue-400 font-black uppercase text-sm tracking-widest border-b border-blue-500/20 pb-3 mb-4 flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-blue-400"></div> Personal Details</h4>
                   <div>
-                    <label className="block text-slate-400 text-sm mb-1 pl-1">Full Name</label>
+                    <label className="block text-slate-400 text-xs font-bold mb-2 pl-1 uppercase tracking-wider">Full Name</label>
                     <input
                       type="text"
                       value={newTenant.name}
                       onChange={e => setNewTenant({ ...newTenant, name: e.target.value })}
-                      className="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-white"
+                      className="w-full input-glass p-4 rounded-2xl text-white placeholder:text-slate-600"
                       placeholder="e.g. Rahul Sharma"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-slate-400 text-sm mb-1 pl-1">Username (Login ID)</label>
+                    <label className="block text-slate-400 text-xs font-bold mb-2 pl-1 uppercase tracking-wider">Username (Login ID)</label>
                     <input
                       type="text"
                       value={newTenant.username}
                       onChange={e => setNewTenant({ ...newTenant, username: e.target.value })}
-                      className="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-white"
+                      className="w-full input-glass p-4 rounded-2xl text-white placeholder:text-slate-600"
                       placeholder="e.g. rahul_sharma"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-slate-400 text-sm mb-1 pl-1">Password</label>
+                    <label className="block text-slate-400 text-xs font-bold mb-2 pl-1 uppercase tracking-wider">Password</label>
                     <input
                       type="text"
                       value={newTenant.password}
                       onChange={e => setNewTenant({ ...newTenant, password: e.target.value })}
-                      className="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-white"
+                      className="w-full input-glass p-4 rounded-2xl text-white placeholder:text-slate-600"
                       placeholder="Secret Password"
                       required
                     />
                   </div>
                 </div>
 
-                <div className="space-y-4">
-                  <h4 className="text-green-400 font-bold uppercase text-xs tracking-wider border-b border-green-500/20 pb-2 mb-4">Lease Terms</h4>
+                <div className="space-y-5 glass p-6 rounded-3xl">
+                  <h4 className="text-emerald-400 font-black uppercase text-sm tracking-widest border-b border-emerald-500/20 pb-3 mb-4 flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-400"></div> Lease Terms</h4>
                   <div>
-                    <label className="block text-slate-400 text-sm mb-1 pl-1">Monthly Rent (₹)</label>
+                    <label className="block text-slate-400 text-xs font-bold mb-2 pl-1 uppercase tracking-wider">Monthly Rent (₹)</label>
                     <input
                       type="number"
                       value={newTenant.rent_amount}
                       onChange={e => setNewTenant({ ...newTenant, rent_amount: e.target.value })}
-                      className="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-white"
-                      placeholder="e.g. 45000"
+                      className="w-full input-glass p-4 rounded-2xl text-white placeholder:text-slate-600 font-mono text-lg"
+                      placeholder="45000"
                       required
                     />
                   </div>
-                  <div>
-                    <label className="block text-slate-400 text-sm mb-1 pl-1">Lease Start Date</label>
-                    <input
-                      type="date"
-                      value={newTenant.lease_start}
-                      onChange={e => setNewTenant({ ...newTenant, lease_start: e.target.value })}
-                      className="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-white"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-slate-400 text-sm mb-1 pl-1">Lease End Date</label>
-                    <input
-                      type="date"
-                      value={newTenant.lease_end}
-                      onChange={e => setNewTenant({ ...newTenant, lease_end: e.target.value })}
-                      className="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-white"
-                      required
-                    />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-slate-400 text-xs font-bold mb-2 pl-1 uppercase tracking-wider">Start Date</label>
+                      <input
+                        type="date"
+                        value={newTenant.lease_start}
+                        onChange={e => setNewTenant({ ...newTenant, lease_start: e.target.value })}
+                        className="w-full input-glass p-4 rounded-2xl text-white css-invert-calendar appearance-none"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-slate-400 text-xs font-bold mb-2 pl-1 uppercase tracking-wider">End Date</label>
+                      <input
+                        type="date"
+                        value={newTenant.lease_end}
+                        onChange={e => setNewTenant({ ...newTenant, lease_end: e.target.value })}
+                        className="w-full input-glass p-4 rounded-2xl text-white css-invert-calendar appearance-none"
+                        required
+                      />
+                    </div>
                   </div>
                 </div>
 
-                <div className="space-y-4">
-                  <h4 className="text-yellow-400 font-bold uppercase text-xs tracking-wider border-b border-yellow-500/20 pb-2 mb-4">Identity Documents</h4>
-                  <div>
-                    <label className="block text-slate-400 text-sm mb-1 pl-1">Aadhaar Card (PDF/JPG)</label>
-                    <input
-                      type="file"
-                      onChange={e => setTenantFiles({ ...tenantFiles, aadhaar: e.target.files[0] })}
-                      className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-300 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-600/20 file:text-blue-400 hover:file:bg-blue-600/30 transition-all"
-                      accept=".pdf,.jpg,.jpeg,.png"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-slate-400 text-sm mb-1 pl-1">PAN Card (PDF/JPG)</label>
-                    <input
-                      type="file"
-                      onChange={e => setTenantFiles({ ...tenantFiles, pan: e.target.files[0] })}
-                      className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-300 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-600/20 file:text-blue-400 hover:file:bg-blue-600/30 transition-all"
-                      accept=".pdf,.jpg,.jpeg,.png"
-                    />
+                <div className="md:col-span-2 space-y-5 glass p-6 rounded-3xl mt-2">
+                  <h4 className="text-yellow-400 font-black uppercase text-sm tracking-widest border-b border-yellow-500/20 pb-3 mb-4 flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-yellow-400"></div> Identity Documents</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-slate-400 text-xs font-bold mb-2 pl-1 uppercase tracking-wider">Aadhaar Card (PDF/JPG)</label>
+                      <input
+                        type="file"
+                        onChange={e => setTenantFiles({ ...tenantFiles, aadhaar: e.target.files[0] })}
+                        className="w-full input-glass p-2 text-slate-300 text-sm file:mr-4 file:py-2.5 file:px-5 file:rounded-xl file:border-0 file:text-xs file:font-black file:uppercase file:tracking-wider file:bg-blue-600/20 file:text-blue-400 hover:file:bg-blue-600/30 transition-all cursor-pointer"
+                        accept=".pdf,.jpg,.jpeg,.png"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-slate-400 text-xs font-bold mb-2 pl-1 uppercase tracking-wider">PAN Card (PDF/JPG)</label>
+                      <input
+                        type="file"
+                        onChange={e => setTenantFiles({ ...tenantFiles, pan: e.target.files[0] })}
+                        className="w-full input-glass p-2 text-slate-300 text-sm file:mr-4 file:py-2.5 file:px-5 file:rounded-xl file:border-0 file:text-xs file:font-black file:uppercase file:tracking-wider file:bg-blue-600/20 file:text-blue-400 hover:file:bg-blue-600/30 transition-all cursor-pointer"
+                        accept=".pdf,.jpg,.jpeg,.png"
+                      />
+                    </div>
                   </div>
                 </div>
 
-                <div className="md:col-span-2 pt-4">
-                  <button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-900/40 transition-all flex items-center justify-center gap-3">
-                    <UserPlus className="w-5 h-5" /> Create Tenant Account
+                <div className="md:col-span-2 pt-6">
+                  <button type="submit" className="w-full btn-primary py-5 text-lg shadow-[0_0_40px_-10px_rgba(59,130,246,0.5)]">
+                    <UserPlus className="w-5 h-5 inline mr-2" /> Create Tenant Account
                   </button>
                 </div>
               </form>
@@ -828,36 +895,50 @@ function OwnerDashboard() {
         }
 
         {/* Add Property Tab */}
+        {/* Add Property Tab */}
         {
           activeTab === 'add_property' && (
-            <div className="glass-strong p-8 rounded-2xl glow-blue animate-in fade-in zoom-in-95 max-w-2xl mx-auto">
-              <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
-                <Building2 className="w-6 h-6 text-blue-400" /> Add New Property
-              </h3>
-              <form onSubmit={handleCreateProperty} className="space-y-4">
-                <div>
-                  <label className="block text-slate-400 text-sm mb-1 pl-1">Property Address</label>
-                  <input type="text" value={newProperty.address} onChange={e => setNewProperty({ ...newProperty, address: e.target.value })} className="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-white" placeholder="e.g. 502, Ocean View, Mumbai" required />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-slate-400 text-sm mb-1 pl-1">Property Type</label>
-                    <select value={newProperty.type} onChange={e => setNewProperty({ ...newProperty, type: e.target.value })} className="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-white">
-                      <option value="Residential">Residential</option>
-                      <option value="Commercial">Commercial</option>
-                      <option value="Industrial">Industrial</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-slate-400 text-sm mb-1 pl-1">Expected Rent (₹)</label>
-                    <input type="number" value={newProperty.rent_amount} onChange={e => setNewProperty({ ...newProperty, rent_amount: e.target.value })} className="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-white" placeholder="25000" required />
-                  </div>
+            <div className="glass-strong p-8 md:p-10 rounded-[2.5rem] glow-blue animate-in fade-in slide-up delay-300 max-w-2xl mx-auto shadow-2xl relative overflow-hidden">
+              <div className="absolute top-[-20%] right-[-10%] w-[300px] h-[300px] bg-blue-500/10 rounded-full blur-[80px] pointer-events-none"></div>
+              <div className="flex items-center gap-5 mb-10 border-b border-white/10 pb-6 relative z-10">
+                <div className="p-4 bg-gradient-to-br from-blue-500/20 to-indigo-500/20 rounded-2xl border border-blue-500/20 shadow-inner">
+                  <Building2 className="w-8 h-8 text-blue-400" />
                 </div>
                 <div>
-                  <label className="block text-slate-400 text-sm mb-1 pl-1">Owner Name (for Records)</label>
-                  <input type="text" value={newProperty.owner_name} onChange={e => setNewProperty({ ...newProperty, owner_name: e.target.value })} className="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-white" placeholder="Ishaan Chawla" required />
+                  <h3 className="text-3xl font-black text-white tracking-tight leading-tight">Add New Property</h3>
+                  <p className="text-slate-400 text-sm font-semibold tracking-wide uppercase mt-1">Expand Your Portfolio</p>
                 </div>
-                <button type="submit" className="w-full btn-primary py-4 mt-6">Add Property to Portfolio</button>
+              </div>
+
+              <form onSubmit={handleCreateProperty} className="space-y-6 relative z-10">
+                <div>
+                  <label className="block text-slate-400 text-xs font-bold uppercase tracking-wider mb-2 pl-1">Property Address</label>
+                  <input type="text" value={newProperty.address} onChange={e => setNewProperty({ ...newProperty, address: e.target.value })} className="w-full input-glass p-4 rounded-2xl text-white placeholder:text-slate-600 text-lg" placeholder="e.g. 502, Ocean View, Mumbai" required />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-slate-400 text-xs font-bold uppercase tracking-wider mb-2 pl-1">Property Type</label>
+                    <div className="relative">
+                      <select value={newProperty.type} onChange={e => setNewProperty({ ...newProperty, type: e.target.value })} className="w-full input-glass p-4 rounded-2xl text-white appearance-none cursor-pointer text-lg">
+                        <option value="Residential">Residential</option>
+                        <option value="Commercial">Commercial</option>
+                        <option value="Industrial">Industrial</option>
+                      </select>
+                      <div className="absolute inset-y-0 right-5 flex items-center pointer-events-none text-blue-400">▼</div>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-slate-400 text-xs font-bold uppercase tracking-wider mb-2 pl-1">Expected Rent (₹)</label>
+                    <input type="number" value={newProperty.rent_amount} onChange={e => setNewProperty({ ...newProperty, rent_amount: e.target.value })} className="w-full input-glass p-4 rounded-2xl text-white placeholder:text-slate-600 font-mono text-lg" placeholder="25000" required />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-slate-400 text-xs font-bold uppercase tracking-wider mb-2 pl-1">Owner Name (for Records)</label>
+                  <input type="text" value={newProperty.owner_name} onChange={e => setNewProperty({ ...newProperty, owner_name: e.target.value })} className="w-full input-glass p-4 rounded-2xl text-white placeholder:text-slate-600 text-lg" placeholder="Ishaan Chawla" required />
+                </div>
+                <button type="submit" className="w-full btn-primary py-5 mt-4 text-lg font-black tracking-wide shadow-[0_0_40px_-10px_rgba(59,130,246,0.5)]">
+                  <Building2 className="w-5 h-5 inline mr-2" /> Add Property to Portfolio
+                </button>
               </form>
             </div>
           )

@@ -105,7 +105,7 @@ def init_db():
         if cursor.fetchone()[0] == 0:
             users = [
                 ("user_owner", "Ishaan", "Ishaan123", "owner", None),
-                ("user_tenant_1", "Chintu", "Chintu123", "tenant", "mumbai_galaxy"),
+                ("user_tenant_1", "Rohan", "Rohan123", "tenant", "mumbai_galaxy"),
                 ("user_tenant_2", "suresh", "tenant123", "tenant", "bangalore_tech"),
             ]
             cursor.executemany("INSERT INTO users VALUES (?, ?, ?, ?, ?)", users)
@@ -114,7 +114,7 @@ def init_db():
         cursor.execute("SELECT count(*) FROM properties")
         if cursor.fetchone()[0] == 0:
             properties = [
-                ("mumbai_galaxy", "101, Galaxy Heights, Bandra West, Mumbai", "Residential", "Chintu", "11-Month Agreement", 85000, "2024-01-01", "2024-12-31", "Ishaan Chawla", "ABCPV1234A"),
+                ("mumbai_galaxy", "101, Galaxy Heights, Bandra West, Mumbai", "Residential", "Rohan", "11-Month Agreement", 85000, "2024-01-01", "2024-12-31", "Ishaan Chawla", "ABCPV1234A"),
                 ("bangalore_tech", "Unit 402, Tech Park View, Koramangala, Bangalore", "Commercial", "Innovate Solutions Pvt Ltd", "Triple Net", 150000, "2023-04-01", "2026-03-31", "Ishaan Chawla", "XYZPM5678B"),
                 ("delhi_villa", "Villa 12, Green Park, South Delhi", "Residential", "Mehta Family", "Standard Lease", 120000, "2024-06-01", "2025-05-31", "Ishaan Chawla", "PQRSJ9012C"),
             ]

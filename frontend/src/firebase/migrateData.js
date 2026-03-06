@@ -10,7 +10,7 @@ const properties = [
         id: 'mumbai_galaxy',
         address: '101, Galaxy Heights, Bandra West, Mumbai',
         type: 'Residential',
-        tenantName: 'Chintu',
+        tenantName: 'Rohan',
         leaseType: '11-Month Agreement',
         rentAmount: 85000,
         leaseStartDate: '2024-01-01',

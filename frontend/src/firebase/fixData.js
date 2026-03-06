@@ -11,12 +11,12 @@ async function fixPropertyData() {
         // Update mumbai_galaxy property with correct rent
         await updateDoc(doc(db, 'properties', 'mumbai_galaxy'), {
             rentAmount: 10000,
-            tenantName: 'Chintu Singh'
+            tenantName: 'Rohan Singh'
         });
 
         console.log('✅ Fixed mumbai_galaxy property data');
         console.log('   - Rent: ₹10,000');
-        console.log('   - Tenant: Chintu Singh');
+        console.log('   - Tenant: Rohan Singh');
     } catch (error) {
         console.error('❌ Error fixing data:', error.message);
     }
