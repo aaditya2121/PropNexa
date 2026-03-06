@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Building2, FileText, AlertCircle, Search, Upload, Wrench, DollarSign, Users, TrendingUp, CreditCard, Printer, Download, Send, CheckCircle, Share2, UserPlus, LogOut, Home } from 'lucide-react';
+import { Building2, FileText, AlertCircle, Search, Upload, Wrench, DollarSign, Users, TrendingUp, Printer, Download, Send, CheckCircle, Share2, UserPlus, LogOut, Home } from 'lucide-react';
 import propnexaLogo from '../propnexa_logo.png';
 import { getAllProperties, getAllMaintenance, getAllDocuments, getAnalytics, addProperty, updateProperty, addUser, addDocument, updateMaintenanceStatus } from '../firebase/firestore';
 import { uploadDocument } from '../firebase/storage';
@@ -20,7 +20,6 @@ function OwnerDashboard() {
   const [queryResult, setQueryResult] = useState(null);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [loading, setLoading] = useState(false);
-  const [selectedFile, setSelectedFile] = useState(null);
 
   // Tenant Form State
   const [newTenant, setNewTenant] = useState({
